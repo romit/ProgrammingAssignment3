@@ -28,16 +28,20 @@ best <- function(state, outcome="pneumonia") {
   }
   
   
-  ## Step 3 
+  ## Step 3: do the code!
   
   # Define a generic function that returns the best hospital
+  # The idea is to sort by colnum and then by name (in case there is a tie in colnum)
+  # then to take the topmost name of that ordered dataframe
   bestHospital <- function(df,colnum,st){
     d2 <- subset(df,df$state==st) # filter and keep rows with the state
-    d2 <- d2[order(d2[,colnum]),] # sort the column associated with colnum
+    d2 <- d2[order(d2[,colnum],d2[,1]),] # sort against colnum then name
     return(d2$name[1]) 
   }
   
-  # take a subset of the data with the mortality data (using dplyr)
+  # take a subset of the data with the mortality data (using dplyr). select allows a 
+  # cool way to select cols by using partial strings. Useful when there are many
+  # columns with complex names!
   library(dplyr)
   d1 <- select(outcare, Hospital.Name, State,  starts_with("Hospital.30.Day.Death."))
   
@@ -50,19 +54,32 @@ best <- function(state, outcome="pneumonia") {
   d1$pneumonia <- suppressWarnings(as.numeric(d1$pneumonia))
   
   
-  # If statements to assign colnum
+  
+  # If statements to assign colnum. Assigned three separate if statements.
+  # Previous version showed a bug here
   if (outcome=="heart attack"){
     colnum <- 3 # 3rd column
   }
     
   if (outcome=="heart failure"){
       colnum <- 4 # 4th column
-  } else {
-    colnum <- 5 # 5th column
-  }
+  } 
   
-  # Call the bestHospital function. The function will return the name 
+  if (outcome=="pneumonia"){
+    colnum <- 5 # 5th column
+  } 
+  
+  
+  
+  # Call the bestHospital function. The function will return the name  
   bestHospital(d1,colnum,state)
 
-  
+# best("TX", "heart attack")  
+# best("TX", "heart failure")
+# best("MD", "heart attack")
+# best("MD", "pneumonia")
+# best("BB", "heart attack")
+# best("NY", "hert attack")
+
+
 }
